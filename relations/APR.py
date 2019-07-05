@@ -1,18 +1,21 @@
+# -*- coding: utf-8 -*-
 import itertools
 
+from algebra.polynomials import * 
+
 class APR:
-    def __init__(self, istance, witness = None):
+    def __init__(self, instance, witness = None):
         """Instance format: The instance x is a tuple (Fq, d, C) where:
-            • Fq is a finite field of size q.
-            • d is an integer representing a bound on the degree of the witness.
-            • C is a set of |C| tuples (M_i, P_i, Q_i) representing constraints, where 
+            - Fq is a finite field of size q.
+            - d is an integer representing a bound on the degree of the witness.
+            - C is a set of |C| tuples (M_i, P_i, Q_i) representing constraints, where 
                 M_i is the mask which is a sequence of field elements M_i = {M_ij ∈ Fq} for j in (1..|M_i|)
                 P_i is the condition of the constraint which is a polynomial with |Mi| variables. 
                 Q_i ∈ Fq[x] is the domain polynomial of the constraint which should vanish on the locations where the constraint should hold.
                 (here we represent Q_i as a set of its' roots)
         """
 
-        (field, d, C) = instantce
+        (field, d, C) = instance
         self.field = field
         self.degree = d
         self.constraints = C        
@@ -48,22 +51,27 @@ class APR:
         T = AIR.T
         poly_ring = polynomialsOver(field, "X")
 
-        mul_group_order = field.size() - 1
-        if (mul_group_order % (W*T) != 0:
+        mul_group_order = field.p - 1
+        if (mul_group_order % (W*T)) != 0:
             raise StarkError("Unable to generate ARP instance for %s of size %d" %(field, W*T))
 
         gamma = field.get_prim_element() ** (mul_group_order / (W*T))
         full_mask = [gamma ** k for k in xrange(2*W)]
         Q = [gamma ** (W*k) for k in xrange(T)]
-        С = [(full_mask, P, Q) for P in AIR.trace_constraints]
-        C += [([1], X - alpha, [gamma**(i*W+j)]) for (i, j, alpha in AIR.boundary_constraints)]
+        C = []
+        for P in AIR.trace_constraints:
+            C.append( (full_mask, P, Q) )
+        # for i, j, alpha in AIR.boundary_constraints:
+        #     C.append( ([1], X - alpha, [gamma**(i*W+j)]) )
+        # С = [ for P in AIR.trace_constraints]
+        # C += [([1], X - alpha, [gamma**(i*W+j)]) for (i, j, alpha in AIR.boundary_constraints)]
 
         #TODO: how is degree defined?
-        degree = T * w
+        degree = T * W
         instance = (field, degree, C)
 
         if AIR.witness is not None:
-            domain, values = zip(*[(gamma**(t*W+j), AIR.witness[j][t]) for  (t, j) in itertools.product(xrange(T), xrange(W))])
+            domain, values = zip(*[(gamma**(t*W+j), field(AIR.witness[t][j]) ) for  (t, j) in itertools.product(xrange(T), xrange(W))])
             witness = construct_interpolation_poly(poly_ring, domain, values)
         else:
             witness = None

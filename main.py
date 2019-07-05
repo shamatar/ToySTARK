@@ -5,6 +5,7 @@ sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 from algebra.finite_field import *
 from algebra.polynomials import *
 from relations.AIR import *
+from relations.APR import *
 
 p = 17
 Fp = IntegersModP(p, 3)
@@ -48,7 +49,8 @@ if __name__ == "__main__":
     assert(air.witness_check(witness))
     air.set_witness(witness)
     assert(air.consistency_check())
-    print(air)
+    apr = APR.fromAIR(air)
+    print(apr)
 
 
 
