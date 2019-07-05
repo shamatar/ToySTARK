@@ -25,7 +25,7 @@ class APR:
         """
         self.witness = witness
 
-    def check_witness():
+    def check_witness(self):
         assert(self.witness is not None, "Witness is undefined at this point.")
 
         if self.witness().degree > d:
@@ -37,7 +37,7 @@ class APR:
 
         return True
 
-    def set_witness(witness):
+    def set_witness(self, witness):
         self.witness = witness
 
     @classmethod
